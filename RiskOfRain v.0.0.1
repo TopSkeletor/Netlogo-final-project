@@ -1,0 +1,81 @@
+;Based on the game, Risk of Rain on Steam and Lunar Launcher from the NetLogo models.
+breed [players player]
+breed [weapons weapon]
+turtles-own [LeftOrRight]
+
+to setup
+  ca
+  ;set-patch-size 1.5
+  ;resize-world -150 150 -150 150
+  create-players 1 [
+    set size 2.5
+    set shape "person"
+    ;set pcolor random 140
+  ]
+  create-weapons 1 [
+    ;OH
+  ]
+  ask patches with [pycor < (1 - max-pycor)] [set pcolor platformColor]
+  ask patches with [pycor > 0] [set pcolor random 140]
+  reset-ticks
+end
+
+to weaponFunction
+  if shape = "default" [
+   set xcor first [xcor] of players
+   set ycor first [ycor] of players
+  ]
+end
+
+to move_left
+  ask players [
+    repeat movementSpeed * 5 [
+      set xcor (xcor - 0.5)
+      wait 0.015
+    ]
+    set LeftOrRight "left"
+  ]
+end
+
+to move_right
+  ask players [
+    repeat movementSpeed * 5 [
+      set xcor (xcor + 0.5)
+      wait 0.015
+    ]
+    set LeftOrRight "right"
+  ]
+end
+
+to jumping
+  ask players [
+    ifelse ycor + jumpHeight > max-pycor []
+    [repeat jumpHeight [
+      set ycor (ycor + 1)
+      wait 0.015
+      ]
+    ]
+  ]
+
+end
+
+to gravity
+  if ycor > -15 AND [pcolor] of patch-at 0 -1 != platformColor [
+    set ycor (ycor - 0.0005 )
+    ifelse LeftOrRight = "left" [
+      set xcor (xcor - (movementSpeed / 50000))]
+    [if LeftOrRight = "right"
+      [set xcor (xcor + (movementSpeed / 50000))]
+    ]
+  ]
+end
+
+to go
+  ifelse followPlayer? [ride player 0] [reset-perspective]
+  ask players [
+    gravity
+  ]
+  ask weapons [
+   weaponFunction
+  ]
+end
